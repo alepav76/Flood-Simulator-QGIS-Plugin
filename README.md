@@ -1,4 +1,5 @@
 FLOOD SIMULATOR - QGIS PLUGIN
+
 Authors: A. Pavan, P. Paganini, M. Potleca
 
 Interactive coastal flood simulation using GeoTIFF DSM data.
