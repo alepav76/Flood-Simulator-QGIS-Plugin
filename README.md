@@ -1,25 +1,8 @@
-# 🌊 Flood Simulator — Plugin QGIS
+🌊 Flood Simulator — QGIS PluginInteractive coastal flood simulation using GeoTIFF DSM data.Calculates flooded areas using the Priority Flood algorithm for 3 sea-level rise scenarios, displaying the results as separate layers within QGIS.
 
-Simulazione interattiva di allagamento costiero da DSM GeoTIFF.
-Calcola le zone inondate con l'algoritmo **Priority Flood** per 3 scenari
-di innalzamento del livello del mare, visualizzando i risultati come layer separati in QGIS.
+📦 Installation
+1. Copy the plugin to the QGIS folderCopy the flood_simulator/ folder into your QGIS plugins directory:Operating SystemPathWindowsC:\Users\<user>\AppData\Roaming\QGIS\QGIS3\profiles\default\python\plugins\macOS~/Library/Application Support/QGIS/QGIS3/profiles/default/python/plugins/Linux~/.local/share/QGIS/QGIS3/profiles/default/python/plugins/The final structure should look like this:
 
----
-
-## 📦 Installazione
-
-### 1. Copia il plugin nella cartella QGIS
-
-Copia la cartella `flood_simulator/` nella directory dei plugin di QGIS:
-
-| Sistema operativo | Percorso |
-|---|---|
-| **Windows** | `C:\Users\<utente>\AppData\Roaming\QGIS\QGIS3\profiles\default\python\plugins\` |
-| **macOS** | `~/Library/Application Support/QGIS/QGIS3/profiles/default/python/plugins/` |
-| **Linux** | `~/.local/share/QGIS/QGIS3/profiles/default/python/plugins/` |
-
-La struttura finale deve essere:
-```
 plugins/
   flood_simulator/
     __init__.py
@@ -30,99 +13,51 @@ plugins/
     metadata.txt
     resources/
       icon.png
-```
+      
+2. Enable the plugin in QGISOpen QGIS.Go to Plugins → Manage and Install Plugins.Under the Installed tab → search for Flood Simulator → ✅ check the box. The 🌊 button will appear in your toolbar.
+3. Install the rasterio dependency. This plugin requires rasterio. Install it within the QGIS Python environment:
+   
+   Windows (OSGeo4W Shell):
+   python -m pip install rasterio
+   
+   macOS / Linux:
+   # Find the QGIS Python path
+   python3 -m pip install rasterio
+   # Or if using QGIS via Conda:
+   conda install -c conda-forge rasterio
 
-### 2. Abilita il plugin in QGIS
+   From the QGIS Python Console (Plugins → Python Console):
+   import subprocess, sys
+   subprocess.run([sys.executable, "-m", "pip", "install", "rasterio"])
 
-1. Apri QGIS
-2. Vai su **Plugin → Gestisci e installa plugin**
-3. Scheda **Installati** → cerca `Flood Simulator` → ✅ spunta la casella
-4. Il bottone 🌊 appare nella toolbar
+🚀 Usage
+Step 1 — Load the DSMClick on "📂 Browse…". Select the GeoTIFF DSM file (e.g., DSM_0.5m.tif).The layer will be loaded automatically into QGIS.
+Step 2 — Select the Seed Point (Sea Level Reference)Click "🖱️ Click on map to choose seed point". The cursor will turn into a crosshair (+). Click on a point that is definitely at sea level on the map.A red marker will appear, showing the seed coordinates.
+Step 3 — Configure ParametersCurrent Sea Level: elevation 0 for most cases.Scenario 1, 2, 3: sea-level rise in meters (e.g., 1.0, 1.5, 2.0).
+Step 4 — Run SimulationClick "🌊 Run Simulation".The progress bar will track the process.Upon completion, 3 new layers are added to the QGIS project:
+🌊 Flood +1.0 m  (XX%  YY km²) — Light blue.
+🌊 Flood +1.5 m  (XX%  YY km²) — Medium blue.
+🌊 Flood +2.0 m  (XX%  YY km²) — Dark blue.
 
-### 3. Installa la dipendenza `rasterio`
+⚙️ How the Algorithm Works
+Priority Flood with a priority queue (min-heap):
+Starts from the seed point (selected sea point).
+Visits cells in ascending order of elevation.
+Propagates water only to cells ≤ water_level that are physically reachable.
+Stops when it encounters barriers higher than the current water level.
 
-Il plugin richiede `rasterio`. Installalo nell'ambiente Python di QGIS:
+Unlike a simple threshold (bathtub model), this approach:✅ Respects levees and walls (even 1 pixel wide).✅ Does not flood closed depressions not connected to the sea.✅ Handles narrow channels and passages correctly.
 
-**Windows (OSGeo4W Shell):**
-```
-python -m pip install rasterio
-```
+🗂️ Output File Structure
+Output rasters are saved in a temporary system folder (e.g., /tmp/flood_sim_XXXXX/) as:
+flood_1.0m.tif
+flood_1.5m.tif
+flood_2.0m.tif
 
-**macOS / Linux:**
-```bash
-# Trova il Python di QGIS
-python3 -m pip install rasterio
-# oppure, se usi QGIS da conda:
-conda install -c conda-forge rasterio
-```
+These are GeoTIFFs with values 0 = dry, 1 = flooded, using the same projection as the original DSM.
 
-**Da QGIS Python Console** (Plugin → Console Python):
-```python
-import subprocess, sys
-subprocess.run([sys.executable, "-m", "pip", "install", "rasterio"])
-```
-
----
-
-## 🚀 Utilizzo
-
-### Passo 1 — Carica il DSM
-- Clicca su **"📂 Sfoglia…"**
-- Seleziona il file GeoTIFF del DSM (es. `DSM_0.5m.tif`)
-- Il layer viene caricato automaticamente in QGIS
-
-### Passo 2 — Seleziona il seed (punto mare)
-- Clicca **"🖱️ Clicca sulla mappa per scegliere il seed"**
-- Il cursore diventa un mirino (+)
-- Clicca su un punto **certamente in mare** nella mappa
-- Viene mostrato un marcatore rosso e le coordinate del seed
-
-### Passo 3 — Imposta i parametri
-- **Livello mare attuale**: quota 0 per la maggior parte dei casi
-- **Scenario 1, 2, 3**: innalzamento in metri (es. 1.0, 1.5, 2.0)
-
-### Passo 4 — Esegui la simulazione
-- Clicca **"🌊 Esegui Simulazione"**
-- La progress bar mostra l'avanzamento
-- Al termine, 3 nuovi layer vengono aggiunti al progetto QGIS:
-  - `🌊 Allagamento +1.0 m  (XX%  YY km²)` — blu chiaro
-  - `🌊 Allagamento +1.5 m  (XX%  YY km²)` — blu medio
-  - `🌊 Allagamento +2.0 m  (XX%  YY km²)` — blu scuro
-
----
-
-## ⚙️ Come funziona l'algoritmo
-
-**Priority Flood** con coda di priorità (min-heap):
-
-1. Parte dal seed (punto mare selezionato)
-2. Visita le celle in ordine crescente di quota
-3. Propaga l'acqua solo alle celle ≤ livello_acqua **fisicamente raggiungibili**
-4. Si blocca dove trova barriere più alte del livello attuale
-
-A differenza di un semplice threshold, questo approccio:
-- ✅ Rispetta argini e muri (anche 1 pixel)
-- ✅ Non allaga depressioni chiuse non connesse al mare
-- ✅ Gestisce canali stretti e passaggi
-
----
-
-## 🗂️ Struttura file output
-
-I raster di output vengono salvati in una cartella temporanea del sistema
-(es. `/tmp/flood_sim_XXXXX/`) come:
-- `flood_1.0m.tif`
-- `flood_1.5m.tif`  
-- `flood_2.0m.tif`
-
-Sono GeoTIFF con valori `0 = asciutto`, `1 = allagato`,
-nella stessa proiezione del DSM originale.
-
----
-
-## 🛠️ Requisiti
-
-- QGIS ≥ 3.0
-- Python ≥ 3.6 (incluso in QGIS)
-- `rasterio` (installazione separata — vedi sopra)
-- `numpy` (già incluso in QGIS)
+🛠️ Requirements
+QGIS ≥ 3.0.
+Python ≥ 3.6 (included with QGIS).
+rasterio (requires separate installation — see above).
+numpy (already included with QGIS).
