@@ -1,0 +1,20 @@
+[general]
+name=Flood Simulator
+qgisMinimumVersion=3.0
+description=Coastal flood simulation from GeoTIFF DSM with interactive seed point selection
+version=1.0.0
+author=A. Pavan, P. Paganini, M. Potleca
+email=
+about=Plugin for simulating coastal flooding caused by sea-level rise. Load a GeoTIFF DSM, interactively select a seed point on the sea surface, set the elevation levels, and visualize the flooded areas as separate layers in QGIS.
+tracker=
+repository=
+homepage=
+
+changelog=1.0.0 - First stable release
+
+tags=flood, DSM, sea level, coastal, simulation, inundation, raster
+category=Raster
+icon=resources/icon.png
+experimental=False
+deprecated=False
+hasProcessingProvider=no
